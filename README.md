@@ -1,4 +1,4 @@
-# Senior Thesis Repo: [PLACE YOUR PROJECT NAME HERE]
+# Senior Thesis Repo: Ezra Tetrick
 This repository is provided to help you build your senior thesis project. You will edit it to store your specification documents, code, and weekly checkins.
 
 First, fork this repo (this makes a copy of it associated with your account) and then clone it to your machine (this makes a copy of your fork on your personal machine). You can then use an editor and a GitHub client to manage the repository.
@@ -35,41 +35,30 @@ If you have any questions feel free to ask me! I'll answer professor questions, 
 
 Below is an example of a project specification.  
 
-## Software Requirements Specification for the Mahoney University Registration System
+## Software Requirements Specification for Vendor Neutral Network Monitoring System
 
 ## Introduction
 
 ### Purpose
-The purpose of this document is to outline the functional and non-functional requirements of Mahoney University’s new online registration system. The system is designed to streamline the registration process for students and faculty, replacing the outdated manual system. This specification serves as a contract between the system stakeholders and the developers to ensure that the system meets the needs of its users while adhering to university policies and technical constraints.
+The purpose of this document is to outline the functional and non-functional requirements of the Vendor Neutral Network Monitoring System (VeNNM). The system is designed to provide one place to monitor and manage network devices from any vendor. This specification serves as a contract between the system stakeholders and the developers to ensure that the system meets the needs of its users while adhering to policies and technical constraints.
 
 The key goals of the new system are:
-- To improve the efficiency of the course registration process for students.
-- To provide staff in the Registrar’s Office with tools to manage course offerings, schedules, and student records.
-- To enhance the accuracy and accessibility of student academic information, such as grades and enrollment history.
-- To support the university’s transition to digital infrastructure while maintaining compatibility with legacy systems during a transitional period.
+- To create an inventory of devices from any vendor.
+- To gather information from devices.
+- To provide monitoring services for devices using various standardized protocols such as SNMP.
+- To provide alerting services for monitored devices.
 
 ### Scope
-This system is intended to support the registration process for all students at Mahoney University, including undergraduates, graduate students, and non-degree-seeking students. The system will handle:
-- Student authentication and secure access to personal records.
-- Course search and registration.
-- Enrollment validation, including prerequisite checks and course availability.
-- Management of student schedules, including the ability to add, drop, or modify course enrollments.
-- Grade viewing and transcript requests.
-
-The scope of the system also includes administrative tools for the Registrar’s Office to:
-- Create and modify course offerings for each academic term.
-- Manage enrollment caps, waitlists, and course prerequisites.
-- Track student progress and generate reports for academic performance.
+This system is intended to provide a vendor-neutral, web-based application to manage and monitor network devices. The system will handle:
+- Create an inventory of network devices.
+- Monitor network devices.
+- Gather information from managed devices.
+- Configure alerting for managed devices.
 
 ### Definitions, Acronyms, and Abbreviations
-- **Registrar**: The official responsible for maintaining student records, managing course schedules, and overseeing the registration process.
-- **Student Information System (SIS)**: A university-wide database that stores student records, course information, and academic data.
-- **GPA**: Grade Point Average, a numerical representation of a student's academic performance.
-- **Semester**: A division of the academic year, typically consisting of a Fall and Spring term, in which courses are offered and completed.
-- **Waitlist**: A system that allows students to reserve a spot in a full course, subject to availability if another student drops the course.
-- **Prerequisite**: A course or requirement that must be completed before a student can enroll in a more advanced course.
-- **User Role**: A designation for system access levels, such as student, registrar, or faculty member, each with different permissions within the system.
-- **Concurrent Enrollment**: The ability for students to be enrolled in multiple courses during the same academic term.
+- SNMP: Simple Network Management Protocol - an application layer protocol used to monitor and manage network devices.
+- ICMP: Internet Control Message Protocol - used to send error messages and operational information about network connectivity, acting as a diagnostic and control mechanism for network devices.
+- ping: a common ICMP utility used to check if a device is online
 
 ## Overview
 The Mahoney University Registration System is a web-based platform designed to automate the course registration process for students and faculty. It serves as the primary interface for students to manage their academic schedules and for university staff to oversee the course offerings and registration workflows.
