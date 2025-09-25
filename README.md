@@ -1,5 +1,5 @@
 # Senior Thesis Repo: Ezra Tetrick
-This repository is provided to help you build your senior thesis project. You will edit it to store your specification documents, code, and weekly checkins.
+<!--This repository is provided to help you build your senior thesis project. You will edit it to store your specification documents, code, and weekly checkins.
 
 First, fork this repo (this makes a copy of it associated with your account) and then clone it to your machine (this makes a copy of your fork on your personal machine). You can then use an editor and a GitHub client to manage the repository.
 
@@ -33,7 +33,8 @@ If you have any questions feel free to ask me! I'll answer professor questions, 
 
 # Sample Spec
 
-Below is an example of a project specification.  
+Below is an example of a project specification.
+-->
 
 ## Software Requirements Specification for Vendor Neutral Network Monitoring System
 
