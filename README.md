@@ -36,7 +36,7 @@ If you have any questions feel free to ask me! I'll answer professor questions, 
 Below is an example of a project specification.
 -->
 
-## Software Requirements Specification for Vendor Neutral Network Monitoring System
+# Software Requirements Specification for Vendor Neutral Network Monitoring System (VeNNM)
 
 ## Introduction
 
@@ -44,127 +44,125 @@ Below is an example of a project specification.
 The purpose of this document is to outline the functional and non-functional requirements of the Vendor Neutral Network Monitoring System (VeNNM). The system is designed to provide one place to monitor and manage network devices from any vendor. This specification serves as a contract between the system stakeholders and the developers to ensure that the system meets the needs of its users while adhering to policies and technical constraints.
 
 The key goals of the new system are:
+- To display a dashboard for managed devices
 - To create an inventory of devices from any vendor.
 - To gather information from devices.
-- To provide monitoring services for devices using various standardized protocols such as SNMP.
+- To provide monitoring services for devices using standardized protocols such as SNMP and ICMP.
 - To provide alerting services for monitored devices.
 
 ### Scope
 This system is intended to provide a vendor-neutral, web-based application to manage and monitor network devices. The system will handle:
-- Create an inventory of network devices.
-- Monitor network devices.
-- Gather information from managed devices.
-- Configure alerting for managed devices.
+- Creating an inventory of network devices.
+- Monitoring network devices.
+- Gathering information from managed devices.
+- Configuring alerting for managed devices.
+- Displaying a dashboard of monitored devices.
 
 ### Definitions, Acronyms, and Abbreviations
-- SNMP: Simple Network Management Protocol - an application layer protocol used to monitor and manage network devices.
-- ICMP: Internet Control Message Protocol - used to send error messages and operational information about network connectivity, acting as a diagnostic and control mechanism for network devices.
-- ping: a common ICMP utility used to check if a device is online
+- **SNMP**: Simple Network Management Protocol — an application layer protocol used to monitor and manage network devices.
+- **ICMP**: Internet Control Message Protocol — used to send error messages and operational information about network connectivity, acting as a diagnostic and control mechanism for network devices.
+- **ping**: A common ICMP utility used to check if a device is online.
+- **Postgres**: Relational database system used to store device inventory, monitoring data, and alerts.
+- **FastAPI**: Python-based web framework used to build the application frontend and API.
 
 ## Overview
-The Mahoney University Registration System is a web-based platform designed to automate the course registration process for students and faculty. It serves as the primary interface for students to manage their academic schedules and for university staff to oversee the course offerings and registration workflows.
+The Vendor Neutral Network Monitoring System (VeNNM) is a web-based platform designed to provide centralized monitoring and management of devices from any vendor. It serves as the primary interface for administrators and operators to oversee device health, performance, and alerts.
 
 ### System Features:
-1. **Secure Login**: Ensures that only authorized users (students, faculty, and staff) have access to the system, with user authentication based on university credentials.
-2. **Course Search**: Allows students to browse available courses by department, term, and subject, with filtering options based on course availability, schedule, and prerequisites.
-3. **Course Registration**: Students can add or drop courses, view class schedules, and receive notifications of any conflicts or unmet prerequisites.
-4. **Grades and Transcripts**: Provides students with access to their grades from current and past semesters, as well as the ability to request official transcripts.
-5. **Registrar Management Tools**: The Registrar’s Office can create, modify, and delete course sections, set enrollment limits, and manage waitlists.
+1. **Secure Login**: Ensures that only authorized users have access to the system, with user authentication and role-based permissions.
+2. **Device Inventory**: Allows administrators to add, edit, or remove devices from the system, storing vendor-neutral information such as IP, hostname, SNMP credentials, and tags.
+3. **Device Monitoring**: Provides polling and active checks of device availability and health using ICMP (ping) and SNMP.
+4. **Data Collection**: Gathers performance metrics such as uptime, interface statistics, and CPU/memory utilization from devices where available.
+5. **Alerting**: Supports rule-based alerting, with notifications for device downtime or threshold breaches (e.g., interface utilization above a set level).
+6. **Dashboards**: Displays device health summaries, alert status, and performance graphs.
+7. **Extensibility**: Supports future integration of additional monitoring protocols or vendor-specific collectors.
 
-The system is designed with scalability in mind, allowing it to handle thousands of students registering simultaneously during peak periods. It will integrate with the university’s existing Student Information System (SIS) and is built using modern web technologies to ensure ease of use, reliability, and performance.
+The system is designed with scalability in mind, allowing it to handle many devices and polling tasks. It will store device and monitoring data in PostgreSQL and use FastAPI to provide a secure, responsive interface.
 
-The following sections detail the specific use cases that the system will support, describing how students and staff will interact with the system during typical operations.
+The following sections detail the specific use cases that the system will support, describing how administrators and operators will interact with VeNNM during typical operations.
 
 ## Use Cases
 
 ### Use Case 1.1: Secure Login
-- **Actors**: Student or registrar
-- **Overview**: Actor uses password to verify their identity.
+- **Users**: Administrator or Operator  
+- **Overview**: Users use credentials to verify their identity.
 
 **Typical Course of Events**:
 1. Page prompts for username and password.
-2. User enters their username and password and hits enter/login.
+2. User enters their credentials and clicks "login."
 3. System verifies that the username and password are correct.
+4. User is granted access based on their role.
 
-**Alternative Courses**:
-- **Step 3**: User and/or password are not correct.
-  1. Displays error.
-  2. Go back to step 1.
+---
 
-### Use Case 1.2: Find a Course
-- **Actors**: Student
-- **Overview**: Student finds a desired class.
+### Use Case 1.2: Add a Device to Inventory
+- **Actors**: Administrator  
+- **Overview**: Administrator adds a network device to the system.
 
 **Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Displays list of current and upcoming semesters.
-3. Student selects a semester.
-4. Displays departments actively offering courses in that semester.
-5. Student selects a department.
-6. Displays courses of that department from that semester that are currently offered.
-7. Student selects a course.
-8. Displays course details.
+1. User navigates to the inventory menu.
+2. User selects "Add Device."
+3. System displays "Add Device" form.
+4. User enters device details (IP, hostname, SNMP settings, tags).
+5. System verifies entry and saves the device to the inventory.
 
 **Alternative Courses**:
-- Any step: Student can start a new search at any time
-  1. Student clicks "start new search."
-  2. Go back to step 2.
 
-### Use Case 1.3: Register for a Course
-- **Actors**: Student
-- **Overview**: Student registers for a course.
+---
+
+### Use Case 1.3: Monitor Device Availability
+- **Actors**: Operator and Administrator
+- **Overview**: Operator monitors if devices are online.
 
 **Typical Course of Events**:
-1. Run Use Case 1.2, *Find a Course*.
-2. Student clicks on "register for course" button.
-3. Verify that student can take the course.
-4. Display "You have successfully registered for 'insert course name here'."
+2. The system periodically pings devices in the inventory.
+3. Device availability is displayed in the dashboard.
+4. All users can view detailed device status.
 
 **Alternative Courses**:
-- **Step 4**: Student can't take course
-  1. Displays "You cannot take this course, please contact the registrar for further information."
 
-### Use Case 1.4: Check Grades
-- **Actors**: Student
-- **Overview**: Student checks grades.
+---
 
-**Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Display previous semesters in which the student took course(s).
-3. Student selects semester.
-4. Displays courses and grades.
-
-### Use Case 1.5: Registrar Creates Sections
-- **Actors**: Registrar
-- **Overview**: Registrar creates section.
+### Use Case 1.4: View Device Metrics
+- **Actors**: Operator and Administrator
+- **Overview**: User views collected metrics from a device.
 
 **Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Registrar selects "Create Section."
-3. Display "Create Section" form.
-4. Registrar submits form.
-5. System verifies valid entry (no overlapping schedules/times).
-6. Displays section details and successfully added.
+1. User selects a device from the inventory.
+2. System displays available metrics (uptime, interfaces, CPU/memory).
+3. Operator views charts of historical data.
 
 **Alternative Courses**:
-- **Step 6**: Entry invalid
-  1. Display error.
-  2. Go back to step 3.
 
-### Use Case 1.6: Registrar Modifies Section
-- **Actors**: Registrar
-- **Overview**: Registrar modifies existing sections.
+---
+
+### Use Case 1.5: Configure Alerts
+- **Actors**: Administrator  
+- **Overview**: Administrator creates alert rules for devices.
 
 **Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Registrar selects "Modify section."
-3. Displays all sections (with order options).
-4. Choose section.
-5. Display "Edit Form" with filled-in data.
-6. Submit/verify data.
-7. Display "Section successfully edited."
+1. Administrator navigates to the Alerting menu.
+2. Administrator selects "Create Alert Rule."
+3. System displays alert configuration form.
+4. Administrator enters rule details (e.g., device offline, threshold > 80%).
+5. System validates and saves the alert rule.
+6. Alerts are triggered automatically when conditions are met.
 
 **Alternative Courses**:
-- **Step 7**: Invalid Data
-  1. Display Error.
-  2. Go back to step 5.
+
+---
+
+### Use Case 1.6: Respond to Alerts
+- **Actors**: Operators and Administrators 
+- **Overview**: Users acknowledge and resolve alerts.
+
+**Typical Course of Events**:
+1. User navigates to the Alerts menu
+2. User views a list of active alerts.
+3. User selects an alert to acknowledge.
+4. System marks the alert as acknowledged and records the operator’s ID.
+5. Alert is marked resolved when the condition clears.
+
+---
+
+**Alternative Courses**:
