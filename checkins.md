@@ -21,19 +21,24 @@ Narrowing down my options and trying to keep my requirements simple.
 ## Week 2 Summary (MM/DD/YYYY)
 ### This week I worked on:
 
-[Your answer here]
+- Installing Ubuntu server on a computer
+- Updating and installing required programs including git, and python
+- Set up SSH keys and configured some security configurations to keep server secure
+- Experimented with some python packages for SNMP
 
 ### This week I learned:
 
-[Your answer here]
+- How to install ubuntu server on an computer with a different OS
+- How to configure SSH keys
+- How to set up SSH key for GitHub login
 
 ### My successes this week were:
 
-[Your answer here]
+- Got Ubuntu server running on a computer
+- Configured SSH keys
 
 ### The challenges I faced this week were:
-
-[Your answer here]
+- Ran into a version issue where the cryptography library in Python would not build with a certain version, and it took a while to get to the bottom of it
 
 ---
 
