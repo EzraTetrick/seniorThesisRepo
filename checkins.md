@@ -18,7 +18,7 @@ Narrowing down my options and trying to keep my requirements simple.
 
 ---
 
-## Week 2 Summary (MM/DD/YYYY)
+## Week 2 Summary (09/28/2025)
 ### This week I worked on:
 
 - Installing Ubuntu server on a computer
