@@ -42,41 +42,41 @@ Narrowing down my options and trying to keep my requirements simple.
 
 ---
 
-## Week 3 Summary (MM/DD/YYYY)
+## Week 3 Summary (10/05/2025)
 ### This week I worked on:
 
-[Your answer here]
+Learning the pysnmp library.
 
 ### This week I learned:
 
-[Your answer here]
+More about how to get specific OIDs from devices using different versions of SNMP(v2c and v3).
 
 ### My successes this week were:
 
-[Your answer here]
+I was able to successfully get SNMP info from several different devices using the pysnmp library.
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I ran into some issues with using the correct OID format but I was able to figure it out with some more research.
 
 ---
 
-## Week 4 Summary (MM/DD/YYYY)
+## Week 4 Summary (10/12/2025)
 ### This week I worked on:
 
-[Your answer here]
+Creating a database design
 
 ### This week I learned:
 
-[Your answer here]
+How to use the SQLAlchemy Python library to create a database instead of something like sqlite3.
 
 ### My successes this week were:
 
-[Your answer here]
+I have a good idea of the information I need to store in my database
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Relearning some SQL as it has been a while since I worked with databases
 
 ---
 
