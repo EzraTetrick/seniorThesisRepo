@@ -76,11 +76,45 @@ I have a good idea of the information I need to store in my database
 
 ### The challenges I faced this week were:
 
-Relearning some SQL as it has been a while since I worked with databases
+Relearning some SQL, as it has been a while since I worked with databases
 
 ---
 
-## Week 5 Summary (MM/DD/YYYY)
+## Week 5 Summary (10/19/2025)
+### This week I worked on:
+Experimented with using BitWarden as a way to store and retrieve credentials, along with the benefit of including MFA.
+
+### This week I learned:
+How to use the BitWarden API and CLI tool.
+
+### My successes this week were:
+Was able to install and log in to the tool.
+
+### The challenges I faced this week were:
+For some reason the cli tool was not returning a session key when I log in so I was not able to retrieve the credentials I need from BitWarden. I think I will have to take another approach for now since I can't get this working.
+
+---
+
+## Week 6 Summary (10/26/2026)
+### This week I worked on:
+
+Designing and creating the db.
+
+### This week I learned:
+
+How to set up a db using SQLAlchemy. How to make db diagrams in Visio.
+
+### My successes this week were:
+
+Created the db and inserted some test data into it. Created a design document for the different objects I need to store.
+
+### The challenges I faced this week were:
+
+I was trying to decide whether to use some type-checking libraries to help make my code cleaner, but it ended up becoming too confusing right now. I will probably revisit it if I have time near the end of the project. For now, it's not necessary.
+
+---
+
+## Week 7 Summary (11/02/20)
 ### This week I worked on:
 
 [Your answer here]
@@ -99,7 +133,7 @@ Relearning some SQL as it has been a while since I worked with databases
 
 ---
 
-## Week 6 Summary (MM/DD/YYYY)
+## Week 8 Summary (11/09/2026)
 ### This week I worked on:
 
 [Your answer here]
@@ -118,45 +152,7 @@ Relearning some SQL as it has been a while since I worked with databases
 
 ---
 
-## Week 7 Summary (MM/DD/YYYY)
-### This week I worked on:
-
-[Your answer here]
-
-### This week I learned:
-
-[Your answer here]
-
-### My successes this week were:
-
-[Your answer here]
-
-### The challenges I faced this week were:
-
-[Your answer here]
-
----
-
-## Week 8 Summary (MM/DD/YYYY)
-### This week I worked on:
-
-[Your answer here]
-
-### This week I learned:
-
-[Your answer here]
-
-### My successes this week were:
-
-[Your answer here]
-
-### The challenges I faced this week were:
-
-[Your answer here]
-
----
-
-## Week 9 Summary (MM/DD/YYYY)
+## Week 9 Summary (11/16/YYYY)
 ### This week I worked on:
 
 [Your answer here]
