@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>VeNNM</h1>
+
+    <h2>All Devices</h2>
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Hostname</th>
+                <th>IP Address</th>
+            </tr>
+        </thead>
+        <tbody id="device-table"></tbody>
+    </table>
+
+    <script>
+        async function loadDevices() {
+            const res = await fetch("/devices");
+            const devices = await res.json();
+
+            const table = document.getElementById("device-table");
+            table.innerHTML = "";
+
+            devices.forEach(d => {
+                const row = `<tr>
+                    <td>${d.status}</td>
+                    <td>${d.hostname}</td>
+                    <td>${d.ip_address}</td>
+                    <td>${d.mac_address}</td>
+                    <td>${d.location}</td>
+                    <td>${d.device_type}</td>
+                    <td>${d.manufacturer}</td>
+                    <td>${d.model}</td>
+                    <td>${d.serial_number}</td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+
+        loadDevices();
+    </script>
+</body>
+</html>
