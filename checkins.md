@@ -117,80 +117,80 @@ I was trying to decide whether to use some type-checking libraries to help make 
 ## Week 7 Summary (11/02/20)
 ### This week I worked on:
 
-[Your answer here]
+I began implementing the home page of my website.
 
 ### This week I learned:
 
-[Your answer here]
+How to create a basic webpage with fastapi.
 
 ### My successes this week were:
 
-[Your answer here]
+I was able to successfully create a home page for my app and began implementing some basic functions.
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I was having some issues with the file structure of my project but was able to get it fixed after some troubleshooting
 
 ---
 
 ## Week 8 Summary (11/09/2026)
 ### This week I worked on:
 
-[Your answer here]
+Creating the SNMP template function of my app to store SNMP credentials and settings.
 
 ### This week I learned:
 
-[Your answer here]
+The different inputs that SNMPv2c and v3 require for authentication.
 
 ### My successes this week were:
 
-[Your answer here]
+I was able to create a new webpage for configuring the SNMP templates.
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I had to learn a little bit of Javascript to create the desired effect in some of my menus.
 
 ---
 
-## Week 9 Summary (11/16/YYYY)
+## Week 9 Summary (11/16/2025)
 ### This week I worked on:
 
-[Your answer here]
+Creating the devices and device management page. There is now a page to add, remove and modify devices. The home page also dispalys a list of all devices now.
 
 ### This week I learned:
 
-[Your answer here]
+How to configure html forms and fastapi to get input from users and then store it in my db.
 
 ### My successes this week were:
 
-[Your answer here]
+Created the device and device management page and udpated the database.
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I am not very knowledable on webdev so I had to learn a few things about html and specifically forms to be able to get user input working right.
 
 ---
 
-## Week 10 Summary (MM/DD/YYYY)
+## Week 10 Summary (11/30/2025)
 ### This week I worked on:
 
-[Your answer here]
+Refactoring my existing SNMP code to allow for different authentication with different version and settings of SNMP. Also added functionality to select SNMP login template when adding a device and the app will automatically reach out to the device and gather some basic info from it.
 
 ### This week I learned:
 
-[Your answer here]
+More about the pysnmp library and the different types of authentication supported.
 
 ### My successes this week were:
 
-[Your answer here]
+I was able to get my code working to allow SNMPv2c and SNMPv3 authentication to switches. 
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I had a lot of issues trying to understand the pysnmp library since I am using the async version for my SNMP code. Eventually I was able to find which parts of the library I needed to import and got things working.
 
 ---
 
-## Week 11 Summary (MM/DD/YYYY)
+## Week 11 Summary (12/02/2025)
 ### This week I worked on:
 
 [Your answer here]
