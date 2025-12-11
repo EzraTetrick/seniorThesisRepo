@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/styles.css">
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1><a href="/" class="title">VeNNM</a></h1><hr>
+
+    <div class="layout">
+        <div class="sidebar">
+            <h3><a href="/manage_devices">Manage Devices</a></h3>
+            <h3><a href="/snmp_templates">Manage SNMP Templates</a></h3>
+        </div>
+
+        <div class="content">
+            <h2>Devices</h2>
+            <table border="1" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Hostname</th>
+                        <th>IP Address</th>
+                        <th>MAC Address</th>
+                        <th>Location</th>
+                        <th>Manufacturer</th>
+                        <th>Device Type</th>
+                        <th>Model</th>
+                        <th>Serial Number</th>
+                        <th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td id="status_{{ device.ip_address }}">{{ device.status }}</td>
+                        <td>{{ device.hostname }}</td>
+                        <td>{{ device.ip_address }}</td>
+                        <td>{{ device.mac_address }}</td>
+                        <td>{{ device.location }}</td>
+                        <td>{{ device.manufacturer }}</td>
+                        <td>{{ device.device_type }}</td>
+                        <td>{{ device.model }}</td>
+                        <td>{{ device.serial_number }}</td>
+                        <td>{{ device.contact }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <script>
+        async function refreshStatuses() {
+            try {
+                const response = await fetch("/device_status");
+                const devices = await response.json();
+
+                devices.forEach(device => {
+                    const el = document.getElementById("status_" + device.ip_address);
+                    if (el) {
+                        el.textContent = device.status;
+                        // Set color: green for online, red for offline
+                        if (device.status === "Online") {
+                            el.style.color = "green";
+                        } else if (device.status === "Offline") {
+                            el.style.color = "red";
+                        } else {
+                            el.style.color = "black";  // fallback for other statuses
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Failed to refresh device statuses:", err);
+            }
+        }
+
+        // Refresh every 10 seconds
+        setInterval(refreshStatuses, 10000);
+        refreshStatuses();  // initial call
+        </script>
+</body>
+</html>

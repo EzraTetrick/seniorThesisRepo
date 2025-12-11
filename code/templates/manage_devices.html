@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/styles.css">
+<html>
+<head>
+    <title>Manage Devices</title>
+</head>
+<body>
+    <h1><a href="/" class="title">VeNNM</a></h1><hr>
+    <h2>Add Device</h2>
+    <form action="/add_device" method="post">
+
+    <label for="ip_address">IP Address:</label><br>
+    <input type="text" id="ip_address" name="ip_address" required><br><br>   
+
+    <label for="hostname">Hostname:</label><br>
+    <input type="text" id="hostname" name="hostname" required><br><br>
+
+    <label for="template_select">Choose an SNMP template:</label><br>
+    <select id="template_select" name="template_id" required>
+        {% for template in snmp_templates %}
+            <option value="" selected>-- Select a template --</option>
+            <option value="{{ template.template_id }}">{{ template.template_name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <input type="submit" value="Submit">
+    </form>
+    <hr>
+    <h2>Remove Device</h2>
+    <form action="/remove_device" method="post">
+
+    <select id="device" name="device_id" required>
+        <option value="" selected>-- Select a device --</option>
+        {% for device in devices %}
+        <option value="{{ device.device_id }}">{{ device.hostname }}({{device.ip_address}})</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <input type="submit" value="Submit" onclick="return confirm('Are you sure you want to delete this device?')">
+    </form>
+    <hr>
+    <h2>Modify Device</h2>
+
+    <!-- Device Select -->
+    <select id="device_select" name="device_id" required>
+        <option value="">-- Select a device --</option>  <!-- default None option -->
+        {% for device in devices %}
+        <option value="{{ device.device_id }}"
+                data-hostname="{{ device.hostname }}"
+                data-ip="{{ device.ip_address }}"
+                data-status="{{ device.status }}"
+                data-mac="{{ device.mac_address }}"
+                data-device_type="{{ device.device_type }}"
+                data-manufacturer="{{ device.manufacturer }}"
+                data-model="{{ device.model }}"
+                data-serial_number="{{ device.serial_number }}"
+                data-location="{{ device.location }}"
+                data-contact="{{ device.contact }}">
+            {{ device.hostname }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <hr>
+
+    <!-- Hidden form (shows only after selecting a device) -->
+    <form id="modify_form" action="/modify_device" method="post" style="display:none;">
+        <input type="hidden" id="device_id_field" name="device_id" value="">
+
+        <label>Hostname:</label><br>
+        <input type="text" id="hostname_field" name="hostname"><br><br>
+
+        <label>IP Address:</label><br>
+        <input type="text" id="ip_field" name="ip_address"><br><br>
+
+        <label>MAC Address:</label><br>
+        <input type="text" id="mac_field" name="mac_address"><br><br>
+
+        <label>Device Type</label><br>
+        <input type="text" id="device_type_field" name="device_type"><br><br>
+
+        <label>Manufacturer</label><br>
+        <input type="text" id="manufacturer_field" name="manufacturer"><br><br>
+
+        <label>Model</label><br>
+        <input type="text" id="model_field" name="model"><br><br>
+
+        <label>Serial Number</label><br>
+        <input type="text" id="serial_number_field" name="serial_number"><br><br>
+
+        <label>Location</label><br>
+        <input type="text" id="location_field" name="location"><br><br>
+
+        <label>Contact</label>
+        <input type="text" id="contact_field" name="contact"><br><br>
+
+        <button type="submit">Update Device</button>
+    </form>
+
+    <script>
+    // Show form and populate fields when device is selected
+    document.getElementById("device_select").addEventListener("change", function () {
+        const selected = this.options[this.selectedIndex];
+
+        if (selected.value === "") {
+            document.getElementById("modify_form").style.display = "none";
+            return;
+        }
+
+        // Show form
+        document.getElementById("modify_form").style.display = "block";
+
+        // Populate fields
+        document.getElementById("hostname_field").value = selected.dataset.hostname;
+        document.getElementById("ip_field").value = selected.dataset.ip;
+        document.getElementById("mac_field").value = selected.dataset.mac;
+        document.getElementById("device_type_field").value = selected.dataset.device_type;
+        document.getElementById("manufacturer_field").value = selected.dataset.manufacturer;
+        document.getElementById("model_field").value = selected.dataset.model;
+        document.getElementById("serial_number_field").value = selected.dataset.serial_number;
+        document.getElementById("location_field").value = selected.dataset.location;
+        document.getElementById("contact_field").value = selected.dataset.contact;
+        document.getElementById("device_id_field").value = selected.value;
+    });
+    </script>
+</body>
+</html>
