@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/static/styles.css">
+<html>
+<head>
+    <title>Monitoring Templates</title>
+</head>
+<body>
+    <h1><a href="/" class="title">VeNNM</a></h1><hr>
+    <h2>Monitoring Templates</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Monitoring Interval</th>
+                <th>Ping Count</th>
+                <th>Timeout</th>
+                <th>Retry Attempts</th>
+                <th>Retry Ping Count</th>
+                <th>Retry Timeout</th>
+                <th>Retry Interval</th>
+                <th>Alert Threshold</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for template in monitoring_templates %}
+        <tr>
+            <td>{{ template.template_name }}</td>
+            <td>{{ template.description }}</td>
+            <td>{{ template.monitoring_interval }}</td>
+            <td>{{ template.ping_count }}</td>
+            <td>{{ template.timeout }}</td>
+            <td>{{ template.retry_attempts }}</td>
+            <td>{{ template.retry_ping_count }}</td>
+            <td>{{ template.retry_timeout }}</td>
+            <td>{{ template.retry_interval }}</td>
+            <td>{{ template.retry_before_alert }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h2>Create Monitoring Templates</h2>
+
+    <form action="/add_monitoring_template" method="post">
+
+    <label for="template_name">Template Name:</label><br>
+    <input type="text" id="template_name" name="template_name" required placeholder="Name"><br><br>
+    
+    <label for="description">Template Description</label><br>
+    <input type="text" id="description" name="description" placeholder="Description"><br><br>
+
+    <label for="monitoring_interval">Monitoring Interval (sec):</label><br>
+    <input type="number" id="monitoring_interval" name="monitoring_interval" required placeholder="Default: 1800 sec"><br><br>    
+
+    <label for="ping_count">Number of Pings:</label><br>
+    <input type="number" id="ping_count" name="ping_count" placeholder="Default: 5"><br><br>
+
+    <label for="timeout">Timeout (sec):</label><br>
+    <input type="number" id="timeout" name="timeout" placeholder="Default: 1 sec"><br><br>
+
+    <label for="retry_attempts">Number of Retry Pings:</label><br>
+    <input type="number" id="retry_attempts" name="retry_attempts" placeholder="Default: 3"><br><br>
+
+    <label for="retry_ping_count">Retry Ping Count:</label><br>
+    <input type="number" id="retry_ping_count" name="retry_ping_count" placeholder="Default: 3"><br><br>
+
+    <label for="retry_timeout">Retry Timeout (sec):</label><br>
+    <input type="number" id="retry_timeout" name="retry_timeout" placeholder="Default: 1 sec"><br><br>
+
+    <label for="retry_interval">Retry Interval (sec):</label><br>
+    <input type="number" id="retry_interval" name="retry_interval" placeholder="Default: 300 sec"><br><br>
+
+    <label for="retry_before_alert">Number of Retries Before Alert:</label><br>
+    <input type="number" id="retry_before_alert" name="retry_before_alert" placeholder="Default: 3"><br><br>
+
+    <input type="submit" value="Create Template">
+</form>
+
+</body>
+</html>

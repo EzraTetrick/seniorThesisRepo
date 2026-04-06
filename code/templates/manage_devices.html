@@ -15,13 +15,27 @@
     <label for="hostname">Hostname:</label><br>
     <input type="text" id="hostname" name="hostname" required><br><br>
 
-    <label for="template_select">Choose an SNMP template:</label><br>
-    <select id="template_select" name="template_id" required>
+    <label for="snmp_template_select">Choose an SNMP template:</label><br>
+    <select id="snmp_template_select" name="snmp_template_id" required>
         {% for template in snmp_templates %}
             <option value="" selected>-- Select a template --</option>
             <option value="{{ template.template_id }}">{{ template.template_name }}</option>
         {% endfor %}
     </select>
+    <br><br>
+
+    <label for="monitoring_template_select">Choose a monitoring template:</label><br>
+    <select id="monitoring_template_select" name="monitoring_template_id" required>
+        {% for template in monitoring_templates %}
+            <option value="" selected>-- Select a template --</option>
+            <option value="{{ template.template_id }}">{{ template.template_name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <label for="query_snmp_info">Query SNMP Information:</label><br>
+    <input type="checkbox" id="query_snmp_info" name="gather_snmp_info" value="true" >
+
     <br><br>
 
     <input type="submit" value="Submit">
@@ -40,6 +54,7 @@
     <input type="submit" value="Submit" onclick="return confirm('Are you sure you want to delete this device?')">
     </form>
     <hr>
+
     <h2>Modify Device</h2>
 
     <!-- Device Select -->

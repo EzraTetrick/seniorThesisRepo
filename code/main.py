@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from database import Base, engine
-from models import Device, SNMP_Template
+from models import Device, SNMP_Template, Monitoring_Template
 from fastapi.responses import RedirectResponse
 from snmp import *
 import asyncio
@@ -35,24 +35,63 @@ def home_page(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/manage_devices", response_class=HTMLResponse)
-def add_device_page(request: Request, db: Session = Depends(get_db)):
+def manage_device_page(request: Request, db: Session = Depends(get_db)):
     snmp_templates = db.query(SNMP_Template).all()
     devices = db.query(Device).all()
+    monitoring_templates = db.query(Monitoring_Template).all()
     return templates.TemplateResponse("manage_devices.html",
                                     {"request": request,
                                     "snmp_templates": snmp_templates,
+                                    "monitoring_templates": monitoring_templates, 
                                     "devices": devices})
 
-@app.get("/devices", response_class=HTMLResponse)
-def add_device_page(request: Request, db: Session = Depends(get_db)):
-    devices = db.query(Device).all()
-    return templates.TemplateResponse("devices.html", {"request": request, "devices": devices})
+
+@app.get("/monitoring_templates", response_class=HTMLResponse)
+def add_template_page(request: Request, db: Session = Depends(get_db)):
+    monitoring_templates = db.query(Monitoring_Template).all()
+    return templates.TemplateResponse("monitoring_templates.html", {"request": request, "monitoring_templates": monitoring_templates})
+
+
+@app.post("/add_monitoring_template", response_class=HTMLResponse)
+async def add_monitoring_template(
+    request: Request,
+    db: Session = Depends(get_db),
+    template_name: str = Form(...),
+    description: str = Form(...),
+    monitoring_interval: int | None = Form(None),
+    ping_count: int | None = Form(None),
+    timeout: int | None = Form(None),
+    retry_attempts: int | None = Form(None),
+    retry_ping_count: int | None = Form(None),
+    retry_timeout: int | None = Form(None),
+    retry_interval: int | None = Form(None),
+    retry_before_alert: int | None = Form(None)                            
+    ):
+    new_template = Monitoring_Template(
+       template_name = template_name,
+       description = description,
+       monitoring_interval = monitoring_interval,
+       ping_count = ping_count,
+       timeout = timeout,
+       retry_attempts = retry_attempts,
+       retry_ping_count = retry_ping_count,
+       retry_timeout = retry_timeout,
+       retry_interval = retry_interval,
+       retry_before_alert = retry_before_alert
+    )
+
+    db.add(new_template)
+    db.commit()
+    db.refresh(new_template)
+
+    return RedirectResponse(url="/", status_code=303)
 
 
 @app.get("/snmp_templates", response_class=HTMLResponse)
-def add_device_page(request: Request, db: Session = Depends(get_db)):
+def add_snmp_template_page(request: Request, db: Session = Depends(get_db)):
     snmp_templates = db.query(SNMP_Template).all()
     return templates.TemplateResponse("snmp_templates.html", {"request": request, "snmp_templates": snmp_templates})
+
 
 @app.post("/add_device", response_class=HTMLResponse)
 async def add_device(
@@ -60,30 +99,32 @@ async def add_device(
     ip_address: str = Form(...),
     hostname: str = Form(...),
     version: str = Form("v2c"),
-    template_id: int = Form(...),
-    community: str | None = Form(None),
-    username: str | None = Form(None),
-    auth_pass: str | None = Form(None),
-    priv_pass: str | None = Form(None),
-    auth_proto: str | None = Form("none"),
-    priv_proto: str | None = Form("none"),
+    snmp_template_id: int = Form(...),
+    monitoring_template_id: int = Form(...),
+    gather_snmp_info: bool = Form(False),
+
     db: Session = Depends(get_db)
 ):
-    template = db.query(SNMP_Template).filter(SNMP_Template.template_id == template_id).first()
-    
-    # Create SNMP instance
-    snmp_device = SNMP(ip=ip_address, version=version, community=template.community,)
+    template = db.query(SNMP_Template).filter(SNMP_Template.template_id == snmp_template_id)
 
-    # Query hostname via SNMP
-    hostname = await snmp_device.get_hostname()
-    sys_location = await snmp_device.get_sys_location()
-    sys_contact = await snmp_device.get_sys_contact()
-    status = "Online"
+    sys_location = None
+    sys_contact = None
+    status = "Unknown"
 
-    # If SNMP fails, fallback to IP as hostname
-    if not hostname:
-        hostname = ip_address
-        status = "Offline"
+    if gather_snmp_info:
+        # Create SNMP instance
+        snmp_device = SNMP(ip=ip_address, version=version)
+
+        # Query hostname via SNMP
+        hostname = str(await snmp_device.get_hostname())
+        sys_location = await snmp_device.get_sys_location()
+        sys_contact = await snmp_device.get_sys_contact()
+        status = "Unknown"
+
+    # # If SNMP fails, or we did not query SNMP info, fallback to IP as hostname
+    # if not hostname:
+    #     hostname = ip_address
+    #     status = "Offline"
 
     # Insert into DB
     new_device = Device(
@@ -91,7 +132,9 @@ async def add_device(
         ip_address=ip_address,
         location=sys_location,
         contact=sys_contact,
-        status=status
+        status=status,
+        snmp_template_id=snmp_template_id,
+        monitoring_template_id=monitoring_template_id
     )
 
     db.add(new_device)
@@ -146,7 +189,7 @@ def modify_device(
     return RedirectResponse(url="/manage_devices", status_code=303)
 
 @app.post("/remove_snmp_template")
-def remove_device(
+def remove_template(
     template_id: int = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -157,8 +200,8 @@ def remove_device(
 
     return RedirectResponse(url="/", status_code=303)
 
-@app.post("/add_template")
-def add_template(
+@app.post("/add_snmp_template")
+def add_snmp_template(
     request: Request,
     template_name: str = Form(...),
     description: str = Form(""),
@@ -207,15 +250,19 @@ def get_device_status(db: Session = Depends(get_db)):
 
 @app.on_event("startup")
 async def start_device_monitor():
-    asyncio.create_task(monitor_devices())
+    pass
+    # asyncio.create_task(monitor_devices())
 
 async def monitor_devices():
-    from database import SessionLocal
     db = SessionLocal()
     while True:
         devices = db.query(Device).all()
+
         for device in devices:
-            online = await ping(device.ip_address)  # your async ping function
+            device_monitoring_template = db.query(Monitoring_Template).filter(Monitoring_Template.template_id == device.monitoring_template_id).first()
+            
+            
+            online = await ping(device.ip_address, de)  # your async ping function
             if online and device.status != "Online":
                 device.status = "Online"
                 db.commit()
