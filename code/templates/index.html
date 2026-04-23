@@ -29,6 +29,7 @@
                         <th>Model</th>
                         <th>Serial Number</th>
                         <th>Contact</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,6 +45,12 @@
                         <td>{{ device.model }}</td>
                         <td>{{ device.serial_number }}</td>
                         <td>{{ device.contact }}</td>
+                        <td>
+                            <button onclick="refreshDevice('{{ device.device_id }}')" id="btn-{{ device.device_id }}">
+                                Refresh
+                            </button>
+                        </td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -80,6 +87,28 @@
         // Refresh every 10 seconds
         setInterval(refreshStatuses, 10000);
         refreshStatuses();  // initial call
-        </script>
+
+        function refreshDevice(deviceId) {
+            const btn = document.getElementById(`btn-${deviceId}`);
+            btn.innerText = "Wait...";
+            btn.disabled = true;
+
+            fetch(`/refresh/${deviceId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Find the row and update cells (using a row ID would be easier)
+                        // For now, a simple page reload is easiest, 
+                        // but you can target specific IDs to be "fancy"
+                        location.reload(); 
+                    } else {
+                        alert("Error: " + data.message);
+                        btn.innerText = "Refresh";
+                        btn.disabled = false;
+                    }
+                });
+        }
+    </script>
+
 </body>
 </html>

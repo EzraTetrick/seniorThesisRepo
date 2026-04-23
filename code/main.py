@@ -1,16 +1,13 @@
-from fastapi import FastAPI, Depends, Request, Form
-from fastapi.responses import FileResponse, HTMLResponse
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, Depends, Request, Form, HTTPException
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from database import Base, engine
+from sqlalchemy.orm import Session
+from database import Base, engine, SessionLocal
 from models import Device, SNMP_Template, Monitoring_Template
-from fastapi.responses import RedirectResponse
 from snmp import *
 import asyncio
 from monitor import ping
-from database import SessionLocal
-from models import Device
 
 app = FastAPI()
 
@@ -110,25 +107,24 @@ async def add_device(
     sys_location = None
     sys_contact = None
     status = "Unknown"
+    snmp_hostname = hostname
 
     if gather_snmp_info:
         # Create SNMP instance
         snmp_device = SNMP(ip=ip_address, version=version)
 
         # Query hostname via SNMP
-        hostname = str(await snmp_device.get_hostname())
+        snmp_hostname = str(await snmp_device.get_hostname())
         sys_location = await snmp_device.get_sys_location()
         sys_contact = await snmp_device.get_sys_contact()
         status = "Unknown"
-
-    # # If SNMP fails, or we did not query SNMP info, fallback to IP as hostname
-    # if not hostname:
-    #     hostname = ip_address
-    #     status = "Offline"
+    
+        if not snmp_hostname:
+            snmp_hostname = hostname
 
     # Insert into DB
     new_device = Device(
-        hostname=hostname,
+        hostname=snmp_hostname,
         ip_address=ip_address,
         location=sys_location,
         contact=sys_contact,
@@ -248,26 +244,211 @@ def get_device_status(db: Session = Depends(get_db)):
         } for d in devices
     ]
 
+@app.get("/refresh/{device_id}")
+async def refresh_device(device_id: int, db: Session = Depends(get_db)):
+    # 1. Fetch device and template
+    device = db.query(Device).filter(Device.device_id == device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    snmp_template = db.query(SNMP_Template).filter(
+        SNMP_Template.template_id == device.snmp_template_id
+    ).first()
+
+    if not snmp_template:
+        raise HTTPException(status_code=400, detail="Device has no associated SNMP template")
+
+    try:
+        # 2. Initialize your SNMP manager and pull everything at once
+        # Assuming your SNMP class takes (ip, version, community)
+        snmp_device = None
+        
+        if not snmp_template.community:
+            raise HTTPException(status_code=400, detail="Device has no associated SNMP community")
+        
+        snmp_device = SNMP(
+            device.ip_address, 
+            version=snmp_template.version,
+            community=snmp_template.community
+        )
+
+        info = await snmp_device.get_all_system_info()
+        if not info:
+            raise Exception("No SNMP data returned")
+
+        # 3. Update the database if we got a valid dictionary back
+        device.hostname = str(info.get("hostname"))
+        device.location = str(info.get("location"))
+        device.contact = str(info.get("contact"))
+        device.manufacturer = str(info.get("manufacturer"))
+        
+        # # Map description to model, truncating to prevent DB column overflow
+        # if info.get("description"):
+        #     device.model = info["description"][:100]
+        
+        # Mark as online since the gather was successful
+        device.status = "Online"
+        
+        db.commit()
+        return {"success": True, "message": f"Refreshed {device.hostname}", "data": info}
+
+    except Exception as e:
+        # Network error or SNMP timeout
+        device.status = "Offline"
+        db.commit()
+        return {"success": False, "message": f"SNMP Error: {str(e)}"}
+
 @app.on_event("startup")
 async def start_device_monitor():
-    pass
-    # asyncio.create_task(monitor_devices())
+    asyncio.create_task(monitor_devices())
+
+# async def monitor_devices():
+#     db = SessionLocal()
+#     while True:
+#         devices = db.query(Device).all()
+#         print(f"Monitoring {len(devices)} devices...")
+
+#         for device in devices:
+#             monitoring_template = db.query(Monitoring_Template).filter(Monitoring_Template.template_id == device.monitoring_template_id).first()
+            
+#             if monitoring_template:
+#                 online = await ping(device.ip_address, monitoring_template.ping_count, monitoring_template.timeout)  # your async ping function
+#                 num_failed_attempts = 0
+
+#                 if online:
+#                     print(f"{device.hostname} is {device.status}")
+#                     if device.status != "Online":
+#                         device.status = "Online"
+#                         db.commit()
+
+#                 else:
+#                     print(f"{device.hostname} is {device.status}")
+#                     for attempt in range(monitoring_template.retry_attempts):
+#                         num_failed_attempts += 1
+#                         print(f"{device.hostname} has failed {num_failed_attempts} ping attempts.")
+                        
+#                         print(f"{device.hostname} is {device.status}")
+#                         if num_failed_attempts == monitoring_template.retry_before_alert:
+#                             print(f"{device.hostname} has exceeded retry attempts. Marking as Offline.")
+#                             device.status = "Offline"
+#                             db.commit()
+                        
+#                         print(f"Waiting for {monitoring_template.retry_interval} seconds before retrying...")
+#                         await asyncio.sleep(monitoring_template.retry_interval)  # retry interval
+                        
+#                         recovered = await ping(device.ip_address, monitoring_template.retry_ping_count, monitoring_template.retry_timeout)
+#                         if recovered:
+#                             print(f"{device.hostname} has recovered after {num_failed_attempts} failed attempts.")
+#                             break
+
+#                     if device.status != "Offline":
+#                         device.status = "Offline"
+#                         db.commit()
+
+#                 print(f"Waiting for {monitoring_template.monitoring_interval} seconds before next check...")      
+#                 await asyncio.sleep(monitoring_template.monitoring_interval)  # interval
+
+#             else:
+#                 device.status = "Unknown"
+#                 online = False
+#                 db.commit()
+
+import asyncio
+
+async def monitor_single_device(device_id, db_factory):
+    """
+    Independent worker for each device. 
+    Uses the device's specific interval and retry variables.
+    """
+    while True:
+        db = db_factory()
+        try:
+            # 1. Fetch current device and template state
+            device = db.query(Device).filter(Device.device_id == device_id).first()
+            if not device:
+                break # Device was deleted from DB
+
+            mt = db.query(Monitoring_Template).filter(
+                Monitoring_Template.template_id == device.monitoring_template_id
+            ).first()
+
+            if not mt:
+                print(f"Device {device.hostname} has no monitoring template. Retrying in 30s...")
+                await asyncio.sleep(30) # Wait for a template to be assigned
+                continue
+
+            # 2. Perform the Primary Ping
+            online = await ping(device.ip_address, mt.ping_count, mt.timeout)
+            
+            if online:
+                print(f"{device.hostname} is Online")
+                if device.status != "Online":
+                    device.status = "Online"
+                    db.commit()
+                # Use YOUR variable: monitoring_interval
+                print(f"Waiting for {mt.monitoring_interval}s before next check...")
+                await asyncio.sleep(mt.monitoring_interval)
+            
+            else:
+                # 3. Handle Failure and Retries
+                print(f"{device.hostname} primary ping failed. Entering retry cycle...")
+                num_failed_attempts = 0
+                recovered = False
+
+                for attempt in range(mt.retry_attempts):
+                    num_failed_attempts += 1
+                    print(f"{device.hostname} attempt {num_failed_attempts} failed.")
+
+                    # Use YOUR variable: retry_before_alert
+                    if num_failed_attempts == mt.retry_before_alert:
+                        print(f"Alert: Marking {device.hostname} as Offline.")
+                        device.status = "Offline"
+                        db.commit()
+
+                    # Use YOUR variable: retry_interval
+                    print(f"Waiting {mt.retry_interval}s before retry...")
+                    await asyncio.sleep(mt.retry_interval)
+
+                    # Use YOUR variables: retry_ping_count and retry_timeout
+                    recovered = await ping(device.ip_address, mt.retry_ping_count, mt.retry_timeout)
+                    
+                    if recovered:
+                        print(f"{device.hostname} recovered after {num_failed_attempts} attempts.")
+                        device.status = "Online"
+                        db.commit()
+                        break
+
+                # If we finish the loop without recovery, ensure status is Offline
+                if not recovered:
+                    if device.status != "Offline":
+                        device.status = "Offline"
+                        db.commit()
+                
+                # After a failure cycle, wait the standard interval before starting over
+                await asyncio.sleep(mt.monitoring_interval)
+
+        except Exception as e:
+            print(f"Error monitoring {device_id}: {e}")
+            await asyncio.sleep(10) # Prevent rapid-fire errors
+        finally:
+            db.close()
 
 async def monitor_devices():
-    db = SessionLocal()
+    """Main Orchestrator: Launches a concurrent task for every device."""
+    active_tasks = {}
+
     while True:
+        db = SessionLocal()
         devices = db.query(Device).all()
+        db.close()
 
         for device in devices:
-            device_monitoring_template = db.query(Monitoring_Template).filter(Monitoring_Template.template_id == device.monitoring_template_id).first()
-            
-            
-            online = await ping(device.ip_address, de)  # your async ping function
-            if online and device.status != "Online":
-                device.status = "Online"
-                db.commit()
-            elif not online and device.status != "Offline":
-                device.status = "Offline"
-                db.commit()
-            print(f"{device.hostname} is {device.status}")
-        await asyncio.sleep(10)  # interval
+            if device.device_id not in active_tasks:
+                print(f"Starting concurrent monitor for: {device.hostname}")
+                # Create a task that runs independently
+                task = asyncio.create_task(monitor_single_device(device.device_id, SessionLocal))
+                active_tasks[device.device_id] = task
+
+        # Check for new devices every 30 seconds
+        await asyncio.sleep(30)
+

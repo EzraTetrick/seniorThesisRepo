@@ -1,4 +1,5 @@
 import os
+import asyncio
 from pysnmp.hlapi import *
 from pysnmp.hlapi.v3arch.asyncio import (
     SnmpEngine,
@@ -37,6 +38,10 @@ MAC_ENTRIES_OID       = "1.3.6.1.2.1.17.4.3.1.2"
 HOSTNAME              = "1.3.6.1.2.1.1.5.0"
 SYS_LOCATION          = "1.3.6.1.2.1.1.6.0"
 SYS_CONTACT           = "1.3.6.1.2.1.1.4.0"
+SYS_DESC = "1.3.6.1.2.1.1.1.0"
+SYS_OBJECT_ID = "1.3.6.1.2.1.1.2.0"
+SYS_UPTIME = "1.3.6.1.2.1.1.3.0"
+SYS_SERVICES = "1.3.6.1.2.1.1.7.0"
 
 
 class SNMP:
@@ -99,7 +104,7 @@ class SNMP:
             elif errorStatus:
                 print(
                     "{} at {}".format(
-                        errorStatus.prettyPrint(),
+                        errorStatus,
                         errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
                     )
                 )
@@ -129,7 +134,7 @@ class SNMP:
         if errorStatus:
             print(
                 "{} at {}".format(
-                    errorStatus.prettyPrint(),
+                    errorStatus,
                     errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
                 )
             )
@@ -155,7 +160,7 @@ class SNMP:
         if errorIndication:
             print("Error:", errorIndication)
         elif errorStatus:
-            print(f"{errorStatus.prettyPrint()} at {varBinds[int(errorIndex) - 1][0]}")
+            print(f"{errorStatus} at {varBinds[int(errorIndex) - 1][0]}")
         else:
             print(f"Interface {index} set to {status}")
 
@@ -179,6 +184,69 @@ class SNMP:
     async def get_sys_contact(self):
         results = await self.get(SYS_CONTACT)
         return str(results[0]) if results else None
+
+    async def get_sys_descr(self):
+        results = await self.get(SYS_DESC)
+        return str(results[0]) if results else None
+
+    async def get_sys_object_id(self):
+        results = await self.get(SYS_OBJECT_ID)
+        return str(results[0]) if results else None
+
+    async def get_sys_uptime(self):
+        results = await self.get(SYS_UPTIME)
+        return int(results[0]) if results else None
+
+    async def get_sys_services(self):
+        results = await self.get(SYS_SERVICES)
+        return int(results[0]) if results else None
+    
+    async def get_all_system_info(self):
+        """
+        Polls all standard system OIDs and returns a structured dictionary.
+        Returns None or a partial dict if the device is unreachable.
+        """
+        try:
+            # Run all getters concurrently to save time
+            results = await asyncio.gather(
+                self.get_hostname(),
+                self.get_sys_location(),
+                self.get_sys_contact(),
+                self.get_sys_descr(),
+                self.get_sys_object_id(),
+                self.get_sys_uptime(),
+                self.get_sys_services(),
+                return_exceptions=True  # Prevents one failure from crashing the whole set
+            )
+
+            # Map results to a dictionary
+            # Note: We check if a result is an Exception in case a specific OID failed
+            info = {
+                "hostname": results[0] if not isinstance(results[0], Exception) else None,
+                "location": results[1] if not isinstance(results[1], Exception) else None,
+                "contact": results[2] if not isinstance(results[2], Exception) else None,
+                "description": results[3] if not isinstance(results[3], Exception) else None,
+                "vendor_oid": results[4] if not isinstance(results[4], Exception) else None,
+                "uptime": results[5] if not isinstance(results[5], Exception) else None,
+                "services": results[6] if not isinstance(results[6], Exception) else None,
+            }
+
+            v_oid = info["vendor_oid"]
+            if v_oid and isinstance(v_oid, str):
+                if ".1.3.6.1.4.1.9" in v_oid:
+                    info["manufacturer"] = "Cisco"
+                elif ".1.3.6.1.4.1.8072" in v_oid:
+                    info["manufacturer"] = "Net-SNMP (Linux)"
+                else:
+                    info["manufacturer"] = "Unknown"
+            else:
+                info["manufacturer"] = None
+                
+            return info
+
+        except Exception as e:
+            print(f"Failed to gather SNMP info: {e}")
+            return None
 
     def decode_hex_string(self, hex_string):
         if hex_string.startswith("0x"):

@@ -1,15 +1,16 @@
 import subprocess
 import asyncio
+from models import Monitoring_Template
 
-async def ping(host: str, count: int = 5, timeout: int = 1) -> bool:
+async def ping(host: str, ping_count: int, timeout: int) -> bool:
     """
     Returns True if host is reachable, False otherwise.
     """
     try:
         result = await asyncio.create_subprocess_exec(
             "ping", 
-            "-c", str(count), 
-            "-W", str(timeout),
+            "-c", str(ping_count), 
+            "-W", str(timeout), 
             
             host,
             stdout=subprocess.DEVNULL,
@@ -17,5 +18,6 @@ async def ping(host: str, count: int = 5, timeout: int = 1) -> bool:
         )
         await result.communicate()
         return result.returncode == 0
+    
     except Exception:
         return False
