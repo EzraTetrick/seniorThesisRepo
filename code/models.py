@@ -8,7 +8,7 @@ class Device(Base):
     __tablename__ = "Devices"
 
     device_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    hostname: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    hostname: Mapped[str] = mapped_column(String(50), nullable=False)
     ip_address: Mapped[str] = mapped_column(String(15), nullable=False)
     mac_address: Mapped[Optional[str]] = mapped_column(String(17))
     device_type: Mapped[Optional[str]] = mapped_column(String(30))

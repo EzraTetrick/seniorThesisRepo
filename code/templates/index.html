@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<link rel="stylesheet" href="/static/styles.css">
 <html>
 <head>
     <title>Home</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <h1><a href="/" class="title">VeNNM</a></h1><hr>
@@ -35,7 +35,7 @@
                 <tbody>
                     {% for device in devices %}
                     <tr>
-                        <td id="status_{{ device.ip_address }}">{{ device.status }}</td>
+                        <td id="status_{{ device.device_id }}">{{ device.status }}</td>
                         <td>{{ device.hostname }}</td>
                         <td>{{ device.ip_address }}</td>
                         <td>{{ device.mac_address }}</td>
@@ -66,7 +66,7 @@
                 const devices = await response.json();
 
                 devices.forEach(device => {
-                    const el = document.getElementById("status_" + device.ip_address);
+                    const el = document.getElementById("status_" + device.device_id);
                     if (el) {
                         el.textContent = device.status;
                         // Set color: green for online, red for offline
@@ -88,27 +88,31 @@
         setInterval(refreshStatuses, 10000);
         refreshStatuses();  // initial call
 
-        function refreshDevice(deviceId) {
+        async function refreshDevice(deviceId) {
             const btn = document.getElementById(`btn-${deviceId}`);
+            const overlay = document.getElementById('loading-overlay');
+
             btn.innerText = "Wait...";
             btn.disabled = true;
+            if (overlay) overlay.style.display = 'flex';
 
-            fetch(`/refresh/${deviceId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Find the row and update cells (using a row ID would be easier)
-                        // For now, a simple page reload is easiest, 
-                        // but you can target specific IDs to be "fancy"
-                        location.reload(); 
-                    } else {
-                        alert("Error: " + data.message);
-                        btn.innerText = "Refresh";
-                        btn.disabled = false;
-                    }
-                });
+            try {
+                const response = await fetch(`/refresh/${deviceId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    location.reload();
+                } else {
+                    if (overlay) overlay.style.display = 'none';
+                    alert("Error: " + data.message);
+                    btn.innerText = "Refresh";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                if (overlay) overlay.style.display = 'none';
+                console.error(err);
+            }
         }
     </script>
-
 </body>
 </html>

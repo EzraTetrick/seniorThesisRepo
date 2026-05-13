@@ -1,6 +1,4 @@
-import os
 import subprocess
-from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
 from models import Device, SNMP_Template, Monitoring_Template
 
@@ -133,8 +131,12 @@ def init_db():
                     monitoring_template_id=mon_tmp.template_id
                 )
                 db.add(new_device)
-                print(f"Adding {hostname} to DB and Network...")
-                setup_network_node(hostname, ip, f"Virtual {d_type.capitalize()}", d_type)
+                print(f"Adding {hostname} to DB...")
+                
+            if exists:
+                print(f"{hostname} already exists in DB, skipping creation.")    
+            print(f"Setting up network node for {hostname} ({ip})...")
+            setup_network_node(hostname, ip, f"Virtual {d_type.capitalize()}", d_type)
             
             count += 1
 
@@ -143,3 +145,7 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+    #fix permissions since set up script has to be run as root
+    print("Fixing permissions for user...")
+    run_cmd("chown ezra:ezra /home/ezra/seniorThesisRepo/code/")
+    run_cmd("chown ezra:ezra /home/ezra/seniorThesisRepo/code/network_assets.db")
