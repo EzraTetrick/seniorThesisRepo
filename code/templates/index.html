@@ -47,7 +47,7 @@
                         <td>{{ device.contact }}</td>
                         <td>
                             <button onclick="refreshDevice('{{ device.device_id }}')" id="btn-{{ device.device_id }}">
-                                Refresh
+                                Refresh SNMP
                             </button>
                         </td>
                         
@@ -105,7 +105,7 @@
                 } else {
                     if (overlay) overlay.style.display = 'none';
                     alert("Error: " + data.message);
-                    btn.innerText = "Refresh";
+                    btn.innerText = "Refresh SNMP";
                     btn.disabled = false;
                 }
             } catch (err) {

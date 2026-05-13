@@ -412,16 +412,40 @@ async def monitor_devices():
 
     while True:
         db = SessionLocal()
-        devices = db.query(Device).all()
-        db.close()
+        try:
+            devices = db.query(Device).all()
 
-        for device in devices:
-            if device.device_id not in active_tasks:
-                logger.info(f"Starting concurrent monitor for: {device.hostname}")
-                # Create a task that runs independently
-                task = asyncio.create_task(monitor_single_device(device.device_id, SessionLocal))
-                active_tasks[device.device_id] = task
+            # Remove tasks that finished, failed, or were cancelled
+            for device_id, task in list(active_tasks.items()):
+                if task.done():
+                    try:
+                        task.result()
+                    except Exception as e:
+                        logger.error(f"Monitor task for device_id {device_id} crashed: {e}")
 
-        # Check for new devices every 30 seconds
+                    logger.warning(f"Removing dead monitor task for device_id {device_id}")
+                    del active_tasks[device_id]
+
+            # Start monitoring tasks for new devices
+            for device in devices:
+                if device.device_id not in active_tasks:
+                    logger.info(
+                        f"Starting concurrent monitor for: "
+                        f"{device.hostname} ({device.ip_address})"
+                    )
+
+                    task = asyncio.create_task(
+                        monitor_single_device(device.device_id, SessionLocal)
+                    )
+
+                    active_tasks[device.device_id] = task
+
+            logger.info(f"Currently monitoring {len(active_tasks)} devices.")
+
+        except Exception as e:
+            logger.error(f"Error in monitor_devices orchestrator: {e}")
+
+        finally:
+            db.close()
+
         await asyncio.sleep(30)
-

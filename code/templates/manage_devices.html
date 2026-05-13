@@ -17,8 +17,8 @@
 
     <label for="snmp_template_select">Choose an SNMP template:</label><br>
     <select id="snmp_template_select" name="snmp_template_id" required>
+        <option value="" selected>-- Select a template --</option>
         {% for template in snmp_templates %}
-            <option value="" selected>-- Select a template --</option>
             <option value="{{ template.template_id }}">{{ template.template_name }}</option>
         {% endfor %}
     </select>
@@ -26,8 +26,8 @@
 
     <label for="monitoring_template_select">Choose a monitoring template:</label><br>
     <select id="monitoring_template_select" name="monitoring_template_id" required>
+        <option value="" selected>-- Select a template --</option>
         {% for template in monitoring_templates %}
-            <option value="" selected>-- Select a template --</option>
             <option value="{{ template.template_id }}">{{ template.template_name }}</option>
         {% endfor %}
     </select>

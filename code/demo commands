@@ -1,0 +1,15 @@
+#if frozen
+sudo pkill -f uvicorn
+
+#for demo
+sudo ip netns exec SW-01 ip link set vnsw11 down
+sudo ip netns exec RT-01 ip link set vnr13 down
+sudo ip netns exec SRV-01 ip link set vnsrv15 down
+
+sudo ip netns exec SW-01 ip link set vnsw11 up
+sudo ip netns exec RT-01 ip link set vnr13 up
+sudo ip netns exec SRV-01 ip link set vnsrv15 up
+
+#host devices to add
+HS-01 192.168.0.17
+HS-02 192.168.0.18

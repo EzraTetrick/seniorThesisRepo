@@ -1,12 +1,31 @@
 import subprocess
 from database import SessionLocal, engine, Base
 from models import Device, SNMP_Template, Monitoring_Template
+import time
 
 def run_cmd(cmd):
     """Helper to run shell commands as root."""
     subprocess.run(f"sudo {cmd}", shell=True, check=True)
 
-import time
+def cleanup_test_env():
+    """Remove old test namespaces, bridge, and snmpd processes."""
+    names = [
+        "SW-01", "SW-02",
+        "RT-01", "RT-02",
+        "SRV-01", "SRV-02",
+        "HS-01", "HS-02"
+    ]
+
+    print("Cleaning up old test environment...")
+
+    run_cmd("pkill snmpd || true")
+
+    for name in names:
+        run_cmd(f"ip netns delete {name} 2>/dev/null || true")
+
+    run_cmd("ip link delete br-test 2>/dev/null || true")
+    run_cmd("rm -f /tmp/snmpd-*.pid")
+    run_cmd("rm -f /tmp/snmpd-*.conf")
 
 def setup_network_node(name, ip, desc, d_type):
     """Creates the Linux namespace and starts snmpd with shortened names."""
@@ -111,7 +130,7 @@ def init_db():
         db.refresh(mon_tmp)
 
     # 3. Create Devices (only if they don't exist)
-    device_types = [("switch", "SW"), ("router", "RT"), ("server", "SRV")]
+    device_types = [("switch", "SW"), ("router", "RT"), ("server", "SRV"), ("host", "HS")]
     
     count = 1
     for d_type, prefix in device_types:
@@ -121,7 +140,7 @@ def init_db():
             
             # Check if device already in DB
             exists = db.query(Device).filter_by(hostname=hostname).first()
-            if not exists:
+            if not exists and d_type != "host":  # Skip adding hosts to DB
                 new_device = Device(
                     hostname=hostname,
                     ip_address=ip,
@@ -144,6 +163,7 @@ def init_db():
     db.close()
 
 if __name__ == "__main__":
+    cleanup_test_env()
     init_db()
     #fix permissions since set up script has to be run as root
     print("Fixing permissions for user...")
